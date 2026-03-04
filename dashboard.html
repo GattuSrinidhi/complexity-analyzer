@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Code Complexity Analyzer</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        textarea { width: 100%; height: 200px; }
+        button { padding: 10px 20px; margin: 10px 0; }
+        .results { margin-top: 20px; }
+        .metric { margin: 10px 0; }
+        canvas { max-width: 600px; }
+    </style>
+</head>
+<body>
+    <h1>C Code Complexity Analyzer</h1>
+    <div>
+        <label for="code">Paste your C code here:</label><br>
+        <textarea id="code" placeholder="Enter C code..."></textarea>
+    </div>
+    <div>
+        <label for="file">Or upload a .c file:</label><br>
+        <input type="file" id="file" accept=".c">
+    </div>
+    <button id="analyze">Analyze Complexity</button>
+    <div class="results" id="results" style="display: none;">
+        <h2>Analysis Results</h2>
+        <div class="metric"><strong>Time Complexity:</strong> <span id="complexity"></span></div>
+        <div class="metric"><strong>Number of Functions:</strong> <span id="functions"></span></div>
+        <div class="metric"><strong>Loops:</strong> <span id="loops"></span></div>
+        <div class="metric"><strong>Decision Statements:</strong> <span id="decisions"></span></div>
+        <div class="metric"><strong>Loop Nesting Depth:</strong> <span id="max_depth"></span></div>
+        <div class="metric"><strong>Recursion Detected:</strong> <span id="recursion"></span></div>
+        <canvas id="chart"></canvas>
+    </div>
+
+    <script>
+        let chartInstance = null; // Global variable to store chart instance
+
+        document.getElementById('file').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('code').value = e.target.result;
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        document.getElementById('analyze').addEventListener('click', async function() {
+            const code = document.getElementById('code').value;
+            console.log('Code to analyze:', code);
+            if (!code.trim()) {
+                alert('Please enter or upload C code.');
+                return;
+            }
+
+            const formData = new URLSearchParams();
+            formData.append('code', code);
+            console.log('Sending request to /analyze');
+
+            try {
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                });
+                console.log('Response status:', response.status);
+                const data = await response.json();
+                console.log('Response data:', data);
+                if (response.ok) {
+                    displayResults(data);
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Fetch error:', error);
+                alert('Failed to analyze code: ' + error.message);
+            }
+        });
+
+        function displayResults(data) {
+            document.getElementById('complexity').textContent = data.complexity;
+            document.getElementById('functions').textContent = data.functions;
+            document.getElementById('loops').textContent = data.loops;
+            document.getElementById('decisions').textContent = data.decisions;
+            document.getElementById('max_depth').textContent = data.max_depth;
+            document.getElementById('recursion').textContent = data.recursion ? 'Yes' : 'No';
+            document.getElementById('results').style.display = 'block';
+
+            // Destroy previous chart if it exists
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            // Create new chart
+            const ctx = document.getElementById('chart').getContext('2d');
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Functions', 'Loops', 'Decisions', 'Max Depth'],
+                    datasets: [{
+                        label: 'Count',
+                        data: [data.functions, data.loops, data.decisions, data.max_depth],
+                        backgroundColor: ['#ff6384', '#36a2eb', '#cc65fe', '#ffce56']
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

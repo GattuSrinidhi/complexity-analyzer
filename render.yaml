@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: complexity-analyzer
+    env: docker
+    plan: free
+    region: oregon
+    autoDeploy: true
