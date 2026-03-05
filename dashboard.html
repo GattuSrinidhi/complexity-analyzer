@@ -32,6 +32,7 @@
         <div class="metric"><strong>Loops:</strong> <span id="loops"></span></div>
         <div class="metric"><strong>Decision Statements:</strong> <span id="decisions"></span></div>
         <div class="metric"><strong>Loop Nesting Depth:</strong> <span id="max_depth"></span></div>
+        <div class="metric"><strong>Cyclomatic Complexity:</strong> <span id="cyclomatic_complexity"></span></div>
         <div class="metric"><strong>Recursion Detected:</strong> <span id="recursion"></span></div>
         <canvas id="chart"></canvas>
     </div>
@@ -89,7 +90,8 @@
             document.getElementById('functions').textContent = data.functions;
             document.getElementById('loops').textContent = data.loops;
             document.getElementById('decisions').textContent = data.decisions;
-            document.getElementById('max_depth').textContent = data.max_depth;
+            document.getElementById('max_depth').textContent = data.max_loop_depth;
+            document.getElementById('cyclomatic_complexity').textContent = data.cyclomatic_complexity;
             document.getElementById('recursion').textContent = data.recursion ? 'Yes' : 'No';
             document.getElementById('results').style.display = 'block';
 
@@ -103,11 +105,11 @@
             chartInstance = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: ['Functions', 'Loops', 'Decisions', 'Max Depth'],
+                    labels: ['Functions', 'Loops', 'Decisions', 'Max Depth', 'CC'],
                     datasets: [{
                         label: 'Count',
-                        data: [data.functions, data.loops, data.decisions, data.max_depth],
-                        backgroundColor: ['#ff6384', '#36a2eb', '#cc65fe', '#ffce56']
+                        data: [data.functions, data.loops, data.decisions, data.max_depth, data.cyclomatic_complexity],
+                        backgroundColor: ['#ff6384', '#36a2eb', '#cc65fe', '#ffce56', '#4bc0c0']
                     }]
                 },
                 options: {
